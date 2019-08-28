@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Toggle your Linux laptop's touchpad under Xorg
+#
+# Copyright (C) Paul Swanson 2019
+#
+# Version 1.0 
+
+TPAD_SEARCH_STRING="touchpad"
+TPAD_DEVICE_NAME=$(xinput --list --name-only | grep -i "$TPAD_SEARCH_STRING")
+TPAD_DEVICE_ID=$(xinput --list --id-only "$TPAD_DEVICE_NAME")
+
+STATE=0
+
+toggle()
+{
+        TPAD_STATE=$(xinput --list-props $TPAD_DEVICE_ID | grep "Device Enabled" | awk 'NR==1{print $4}')
+        if [ "$TPAD_STATE" -eq "1" ]; then
+                echo "Touchpad was enabled"
+                STATE=1
+        else
+                echo "Touchpad was disabled"
+                STATE=0
+        fi
+}
+
+if [ -z "$1" ]; then
+        toggle
+elif [ $1 = "e" -o $1 = "enable" ]; then
+	STATE=0
+elif [ $1 = "d" -o $1 = "disable" ]; then
+	STATE=1
+elif [ $1 = "t" -o $1 = "toggle" ]; then
+        toggle
+else
+	echo "Unrecognised parameter. Usage: $0 e[nable] | d[isable] | t[oggle]"
+	return
+fi
+
+if [ "$STATE" -eq "0" ]; then
+        xinput --enable $TPAD_DEVICE_ID
+        echo "Touchpad now enabled"
+else
+        xinput --disable $TPAD_DEVICE_ID
+        echo "Touchpad now disabled"
+fi
